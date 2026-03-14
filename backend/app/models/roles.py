@@ -473,7 +473,9 @@ class Avenger(BaseRole):
         if self.revenge_target:
             target = game.players.get(self.revenge_target)
             if target and target.is_alive:
-                target.kill(game, killer_id=self.player_id, cause="avenger")
+                # Check if chain kills are allowed - if not, don't trigger target's on_death
+                allow_chain = game.settings.avenger_chain_kill
+                target.kill(game, killer_id=self.player_id, cause="avenger", trigger_on_death=allow_chain)
                 return ActionResult(
                     success=True,
                     message=f"The Avenger's curse strikes {target.name}!",

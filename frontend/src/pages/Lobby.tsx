@@ -210,6 +210,27 @@ export default function Lobby() {
                   </button>
                 </div>
 
+                {/* Avenger Chain Kill */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Avenger Chain Kills</div>
+                    <div className="text-sm text-gray-400">Allow revenge chain reactions (A→B→C)</div>
+                  </div>
+                  <button
+                    onClick={() => send('update_settings', { avenger_chain_kill: !lobbyState.settings?.avenger_chain_kill })}
+                    disabled={!isAdmin}
+                    className={`w-14 h-8 rounded-full transition-colors ${
+                      lobbyState.settings?.avenger_chain_kill 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-600'
+                    } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${
+                      lobbyState.settings?.avenger_chain_kill ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
                 {!isAdmin && (
                   <div className="text-sm text-gray-500 italic">
                     Only the admin can change settings

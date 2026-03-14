@@ -113,11 +113,11 @@ class Player(BaseModel):
         """Assign a role to this player."""
         self.role = create_role(role_type, self.id)
     
-    def kill(self, game: "Game", killer_id: Optional[str] = None, cause: Optional[str] = None) -> Optional[ActionResult]:
+    def kill(self, game: "Game", killer_id: Optional[str] = None, cause: Optional[str] = None, trigger_on_death: bool = True) -> Optional[ActionResult]:
         """Kill this player and trigger death effects."""
         self.is_alive = False
         self.death_cause = cause
-        if self.role:
+        if self.role and trigger_on_death:
             return self.role.on_death(game, killer_id)
         return None
     
@@ -235,11 +235,13 @@ class GameSettings(BaseModel):
     """Game settings configurable by admin."""
     reveal_role_on_death: bool = True  # Show dead player's role
     show_vote_counts: bool = True      # Show vote counts during voting
+    avenger_chain_kill: bool = False   # If true, avenger revenge can chain (A->B->C)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
             "reveal_role_on_death": self.reveal_role_on_death,
             "show_vote_counts": self.show_vote_counts,
+            "avenger_chain_kill": self.avenger_chain_kill,
         }
 
 
