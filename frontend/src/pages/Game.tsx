@@ -29,12 +29,12 @@ export default function Game() {
     }
   }, [roomCode, playerId, isConnected, connect]);
 
-  // Redirect to lobby if game not started
+  // Redirect to lobby if game not started (only if no gameState exists)
   useEffect(() => {
-    if (lobbyState?.phase === 'lobby') {
+    if (!gameState && lobbyState?.phase === 'lobby') {
       navigate(`/lobby/${roomCode}`);
     }
-  }, [lobbyState?.phase, roomCode, navigate]);
+  }, [gameState, lobbyState?.phase, roomCode, navigate]);
 
   // Handle leave
   const handleLeave = () => {

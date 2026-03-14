@@ -186,7 +186,8 @@ function handleMessage(
       break;
 
     case 'game_state':
-      set({ gameState: data as GameState });
+      // Clear lobbyState when game starts to prevent navigation conflicts
+      set({ gameState: data as GameState, lobbyState: null });
       break;
 
     case 'player_joined':
