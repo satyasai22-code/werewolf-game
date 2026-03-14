@@ -111,21 +111,13 @@ export const useGameStore = create<GameStore>()(
           existingWs.close();
         }
 
-        // Use environment variable for API URL, fallback to same host
-        const apiBase = import.meta.env.VITE_API_URL || '';
-        let wsUrl: string;
+        // Use environment variable for API URL, fallback to localhost:8000 for dev
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
+        const apiHost = apiBase.replace(/^https?:\/\//, '');
+        const wsUrl = `${wsProtocol}//${apiHost}/ws/${roomCode}/${playerId}`;
         
-        if (apiBase) {
-          // Production: use configured API URL
-          const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
-          const apiHost = apiBase.replace(/^https?:\/\//, '');
-          wsUrl = `${wsProtocol}//${apiHost}/ws/${roomCode}/${playerId}`;
-        } else {
-          // Development: use same host
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          wsUrl = `${protocol}//${window.location.host}/ws/${roomCode}/${playerId}`;
-        }
-        
+        console.log('Connecting to WebSocket:', wsUrl);
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {

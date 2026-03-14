@@ -234,18 +234,27 @@ async def websocket_endpoint(
                 player_id
             )
     
-    # Notify others
-    await manager.broadcast_to_room(
-        {
-            "type": "player_joined" if current_phase == GamePhase.LOBBY else "player_reconnected",
-            "data": {
-                "player_id": player_id,
-                "player_name": player.name if player else "Unknown"
-            }
-        },
-        room_code,
-        exclude={player_id}
-    )
+    # Notify others - broadcast full room state so all players see the update
+    if current_phase == GamePhase.LOBBY:
+        await manager.broadcast_to_room(
+            {
+                "type": "room_state",
+                "data": room.game.to_lobby_dict()
+            },
+            room_code
+        )
+    else:
+        await manager.broadcast_to_room(
+            {
+                "type": "player_reconnected",
+                "data": {
+                    "player_id": player_id,
+                    "player_name": player.name if player else "Unknown"
+                }
+            },
+            room_code,
+            exclude={player_id}
+        )
     
     try:
         while True:

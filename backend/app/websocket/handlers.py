@@ -97,15 +97,11 @@ class GameMessageHandler:
         if player:
             player.is_ready = not player.is_ready
             
-            # Broadcast updated room state
+            # Broadcast full room state to all players so UI updates
             await manager.broadcast_to_room(
                 {
-                    "type": MessageType.PLAYER_READY,
-                    "data": {
-                        "player_id": player_id,
-                        "is_ready": player.is_ready,
-                        "all_ready": game.all_players_ready()
-                    }
+                    "type": MessageType.ROOM_STATE,
+                    "data": game.to_lobby_dict()
                 },
                 room_code
             )
