@@ -11,7 +11,9 @@ export default function VotingPhase() {
   const alivePlayers = gameState.players.filter(
     (p) => p.is_alive && p.id !== playerId
   );
+  // vote_counts will only be present if show_vote_counts setting is enabled
   const voteCounts = gameState.vote_counts || {};
+  const showVoteCounts = Object.keys(voteCounts).length > 0;
 
   const handleVote = (targetId: string | null) => {
     if (hasVoted || !gameState.is_alive) return;
@@ -33,7 +35,9 @@ export default function VotingPhase() {
           </p>
         </div>
 
-        <VoteDisplay voteCounts={voteCounts} players={gameState.players} />
+        {showVoteCounts && (
+          <VoteDisplay voteCounts={voteCounts} players={gameState.players} />
+        )}
       </div>
     );
   }
@@ -73,8 +77,8 @@ export default function VotingPhase() {
                   </div>
                   <div className="text-sm font-medium">{player.name}</div>
                   
-                  {/* Live vote count */}
-                  {voteCount > 0 && (
+                  {/* Live vote count - only show if setting enabled */}
+                  {showVoteCounts && voteCount > 0 && (
                     <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">
                       {voteCount}
                     </div>
@@ -104,12 +108,18 @@ export default function VotingPhase() {
         </>
       )}
 
-      {hasVoted && (
+      {hasVoted && showVoteCounts && (
         <VoteDisplay 
           voteCounts={voteCounts} 
           players={gameState.players}
           myVote={selectedTarget}
         />
+      )}
+
+      {hasVoted && !showVoteCounts && (
+        <div className="text-center text-gray-400">
+          <p>Waiting for all players to vote...</p>
+        </div>
       )}
     </div>
   );

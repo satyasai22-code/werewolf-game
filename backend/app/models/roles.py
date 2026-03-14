@@ -368,23 +368,15 @@ class Witch(BaseRole):
         if not self.has_elixir:
             return ActionResult(success=False, message="You have already used your Elixir")
         
-        if not game.night_state.werewolf_target:
-            return ActionResult(
-                success=False, 
-                message="No one is being attacked tonight"
-            )
-        
-        # Save the werewolf target
+        # Witch uses elixir blindly - doesn't know if anyone is being attacked
+        # If no one is being attacked, elixir is wasted
         game.night_state.witch_saved = True
         self.has_elixir = False
         
-        target = game.players.get(game.night_state.werewolf_target)
-        target_name = target.name if target else "Unknown"
-        
         return ActionResult(
             success=True,
-            message=f"You used your Elixir to save {target_name}",
-            data={"saved_id": game.night_state.werewolf_target},
+            message="You used your Elixir of Life. If anyone was attacked, they will be saved.",
+            data={"used_elixir": True},
             visible_to=[self.player_id]
         )
     
@@ -420,16 +412,11 @@ class Witch(BaseRole):
         }
     
     def get_visible_info(self, game: "Game") -> Dict[str, Any]:
-        info = {
+        # Witch knows their potion status but NOT who is being attacked
+        return {
             "has_elixir": self.has_elixir,
             "has_poison": self.has_poison
         }
-        # Witch can see who is being attacked
-        if game.night_state.werewolf_target:
-            target = game.players.get(game.night_state.werewolf_target)
-            if target:
-                info["attack_victim"] = {"id": target.id, "name": target.name}
-        return info
 
 
 class Avenger(BaseRole):
@@ -438,14 +425,13 @@ class Avenger(BaseRole):
     role_type = RoleType.AVENGER
     team = Team.VILLAGE
     name = "Avenger"
-    description = "Choose a target. If you die, they die with you."
+    description = "Choose a target each night. If you die, they die with you."
     priority = 20
     has_night_action = True
     
     def __init__(self, player_id: str):
         super().__init__(player_id)
         self.revenge_target: Optional[str] = None
-        self.target_locked = False
     
     def perform_action(
         self, 
@@ -453,12 +439,6 @@ class Avenger(BaseRole):
         target_id: Optional[str] = None,
         action_type: str = "primary"
     ) -> ActionResult:
-        if self.target_locked:
-            return ActionResult(
-                success=False, 
-                message="Your revenge target is already locked"
-            )
-        
         if not target_id:
             return ActionResult(success=False, message="Must select a revenge target")
         
@@ -466,8 +446,18 @@ class Avenger(BaseRole):
         if not target or not target.is_alive:
             return ActionResult(success=False, message="Invalid target")
         
+        old_target = self.revenge_target
         self.revenge_target = target_id
-        self.target_locked = True
+        
+        if old_target and old_target != target_id:
+            old_target_player = game.players.get(old_target)
+            old_name = old_target_player.name if old_target_player else "Unknown"
+            return ActionResult(
+                success=True,
+                message=f"Changed target from {old_name} to {target.name}. If you die, {target.name} will share your fate.",
+                data={"revenge_target": target_id},
+                visible_to=[self.player_id]
+            )
         
         return ActionResult(
             success=True,
@@ -492,17 +482,18 @@ class Avenger(BaseRole):
         return None
     
     def get_night_action_prompt(self) -> Dict[str, Any]:
-        if self.target_locked:
+        if self.revenge_target:
             return {
                 "role": self.role_type.value,
-                "has_action": False,
-                "prompt": "Your target is locked. Wait for dawn...",
-                "action_type": "none"
+                "has_action": True,
+                "prompt": "You can change your revenge target or keep it the same",
+                "action_type": "revenge",
+                "current_target": self.revenge_target
             }
         return {
             "role": self.role_type.value,
             "has_action": True,
-            "prompt": "Choose your revenge target (can only be set once)",
+            "prompt": "Choose your revenge target",
             "action_type": "revenge"
         }
     
@@ -513,10 +504,9 @@ class Avenger(BaseRole):
                 "revenge_target": {
                     "id": self.revenge_target,
                     "name": target.name if target else "Unknown"
-                },
-                "target_locked": self.target_locked
+                }
             }
-        return {"revenge_target": None, "target_locked": False}
+        return {"revenge_target": None}
 
 
 # Role Registry for easy instantiation

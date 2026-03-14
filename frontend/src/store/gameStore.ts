@@ -260,18 +260,20 @@ function handleMessage(
       set({ nightResult: data as NightResult });
       break;
 
-    case 'vote_update':
-      // Update vote counts in game state
+    case 'vote_update': {
+      // Update vote counts in game state (only if provided - depends on setting)
+      const voteUpdateData = data as { vote_counts?: Record<string, number> };
       const { gameState: currentState } = get();
-      if (currentState) {
+      if (currentState && voteUpdateData.vote_counts) {
         set({
           gameState: {
             ...currentState,
-            vote_counts: (data as { vote_counts: Record<string, number> }).vote_counts,
+            vote_counts: voteUpdateData.vote_counts,
           },
         });
       }
       break;
+    }
 
     case 'vote_result':
       // Vote result is just informational, game_state update will follow

@@ -168,12 +168,13 @@ class Player(BaseModel):
                 view["valid_targets"] = self.role.get_valid_targets(game)
         
         # Add voting info during day voting
-        if game.state_machine.current_phase == GamePhase.DAY_VOTING and self.is_alive:
-            view["can_vote"] = True
-            # Only show vote counts if setting enabled
+        if game.state_machine.current_phase == GamePhase.DAY_VOTING:
+            if self.is_alive:
+                view["can_vote"] = True
+                view["my_vote"] = game.voting_state.votes.get(self.id)
+            # Show vote counts to everyone if setting enabled
             if game.settings.show_vote_counts:
                 view["vote_counts"] = game.voting_state.get_vote_counts()
-            view["my_vote"] = game.voting_state.votes.get(self.id)
         
         # Add last night deaths during day phases
         if game.state_machine.current_phase in [GamePhase.DAY_ANNOUNCEMENT, GamePhase.DAY_DISCUSSION, GamePhase.DAY_VOTING]:
@@ -391,10 +392,10 @@ class Game(BaseModel):
                 if player.role.has_poison:
                     return True
             
-            # Avenger with target locked on a werewolf
-            # If avenger dies, the werewolf dies too (possible tie)
+            # Avenger can change target each round
+            # If there are werewolves, avenger is a potential threat
             if player.role.role_type == RoleType.AVENGER:
-                if player.role.target_locked and player.role.revenge_target in alive_werewolf_ids:
+                if alive_werewolf_ids:
                     return True
         
         return False
@@ -404,12 +405,7 @@ class Game(BaseModel):
         players_with_actions = []
         for player in self.get_alive_players():
             if player.role and player.role.has_night_action:
-                # Special handling for Avenger - only has action once
-                if player.role.role_type == RoleType.AVENGER:
-                    if not player.role.target_locked:
-                        players_with_actions.append(player.id)
-                else:
-                    players_with_actions.append(player.id)
+                players_with_actions.append(player.id)
         return players_with_actions
     
     def process_night_actions(self) -> List[Dict[str, Any]]:

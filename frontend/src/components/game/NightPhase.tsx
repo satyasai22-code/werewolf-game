@@ -159,7 +159,7 @@ function getActionButtonText(actionType: string): string {
     case 'kill': return 'Confirm Kill';
     case 'reveal': return 'Reveal Role';
     case 'heal': return 'Protect Player';
-    case 'revenge': return 'Set Revenge Target';
+    case 'revenge': return 'Confirm Target';
     default: return 'Confirm';
   }
 }
@@ -173,10 +173,9 @@ function WitchAction() {
 
   if (!gameState?.night_prompt) return null;
 
-  const { night_prompt, role_info } = gameState;
+  const { night_prompt } = gameState;
   const hasElixir = night_prompt.has_elixir;
   const hasPoison = night_prompt.has_poison;
-  const attackVictim = (role_info as { attack_victim?: { id: string; name: string } })?.attack_victim;
 
   const targetPlayers = gameState.players.filter(
     (p) => p.is_alive && p.id !== gameState.player_id
@@ -212,19 +211,10 @@ function WitchAction() {
         <p className="text-gray-400 mt-2">Choose your action wisely...</p>
       </div>
 
-      {/* Attack notification */}
-      {attackVictim && hasElixir && (
-        <div className="bg-red-900/30 border border-red-600 rounded-lg p-4 mb-6 text-center">
-          <p className="text-red-300">
-            🐺 The werewolves are attacking <strong>{attackVictim.name}</strong> tonight!
-          </p>
-        </div>
-      )}
-
       {/* Potion options */}
       <div className="space-y-4 mb-6">
         {/* Elixir option */}
-        {hasElixir && attackVictim && (
+        {hasElixir && (
           <button
             onClick={() => { setSelectedAction('save'); setPoisonTarget(null); }}
             className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
@@ -237,7 +227,7 @@ function WitchAction() {
               <span className="text-2xl">💚</span>
               <div>
                 <div className="font-bold text-green-400">Use Elixir of Life</div>
-                <div className="text-sm text-gray-400">Save {attackVictim.name} from death</div>
+                <div className="text-sm text-gray-400">Save whoever is being attacked tonight</div>
               </div>
             </div>
           </button>

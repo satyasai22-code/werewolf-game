@@ -416,16 +416,19 @@ class GameMessageHandler:
         # Cast vote
         game.voting_state.cast_vote(player_id, target_id)
         
-        # Broadcast vote update
+        # Broadcast vote update (only include vote_counts if setting enabled)
+        vote_update_data = {
+            "voter_id": player_id,
+            "votes_cast": len(game.voting_state.votes),
+            "votes_needed": len(game.get_alive_players())
+        }
+        if game.settings.show_vote_counts:
+            vote_update_data["vote_counts"] = game.voting_state.get_vote_counts()
+        
         await manager.broadcast_to_room(
             {
                 "type": MessageType.VOTE_UPDATE,
-                "data": {
-                    "voter_id": player_id,
-                    "vote_counts": game.voting_state.get_vote_counts(),
-                    "votes_cast": len(game.voting_state.votes),
-                    "votes_needed": len(game.get_alive_players())
-                }
+                "data": vote_update_data
             },
             room_code
         )
