@@ -301,13 +301,20 @@ function handleMessage(
           gameState: {
             ...currentGameState,
             phase: 'game_over',
-            players: gameOverData.players.map(p => ({
-              id: p.id,
-              name: p.name,
-              is_alive: p.is_alive,
-              role: p.role,
-              death_cause: p.death_cause as 'werewolf' | 'poison' | 'voted_out' | 'avenger' | null | undefined,
-            })),
+            players: gameOverData.players.map(p => {
+              // Find existing player data to preserve is_admin, is_ready, is_connected
+              const existingPlayer = currentGameState.players.find(ep => ep.id === p.id);
+              return {
+                id: p.id,
+                name: p.name,
+                is_admin: existingPlayer?.is_admin ?? false,
+                is_ready: existingPlayer?.is_ready ?? false,
+                is_alive: p.is_alive,
+                is_connected: existingPlayer?.is_connected ?? true,
+                role: p.role,
+                death_cause: p.death_cause as 'werewolf' | 'poison' | 'voted_out' | 'avenger' | null | undefined,
+              };
+            }),
           },
         });
       }

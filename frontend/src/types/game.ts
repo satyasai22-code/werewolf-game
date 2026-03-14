@@ -121,6 +121,7 @@ export type MessageType =
   | 'leave_room'
   | 'toggle_ready'
   | 'update_role_config'
+  | 'update_settings'
   | 'start_game'
   | 'night_action'
   | 'cast_vote'
@@ -137,7 +138,9 @@ export type MessageType =
   | 'vote_result'
   | 'game_over'
   | 'error'
-  | 'timer_update';
+  | 'timer_update'
+  | 'skip_status'
+  | 'skip_discussion';
 
 export interface WebSocketMessage<T = unknown> {
   type: MessageType;
