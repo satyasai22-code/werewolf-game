@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #efefef;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.font-title {
+  font-family: 'Cinzel', serif;
+}
+
+@layer components {
+  .btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 ease-in-out;
+  }
+  
+  .btn-primary {
+    @apply bg-werewolf-accent text-white hover:bg-red-600 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-700 text-white hover:bg-gray-600 active:scale-95;
+  }
+  
+  .btn-success {
+    @apply bg-werewolf-forest text-white hover:bg-green-600 active:scale-95;
+  }
+  
+  .btn-disabled {
+    @apply bg-gray-600 text-gray-400 cursor-not-allowed;
+  }
+  
+  .card {
+    @apply bg-werewolf-darker/80 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl;
+  }
+  
+  .input {
+    @apply w-full px-4 py-3 bg-werewolf-dark/80 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-werewolf-accent focus:ring-1 focus:ring-werewolf-accent transition-colors;
+  }
+  
+  .role-card {
+    @apply p-4 rounded-lg border-2 cursor-pointer transition-all duration-200;
+  }
+  
+  .role-card-werewolf {
+    @apply border-red-600 bg-red-900/20 hover:bg-red-900/40;
+  }
+  
+  .role-card-village {
+    @apply border-green-600 bg-green-900/20 hover:bg-green-900/40;
+  }
+}
