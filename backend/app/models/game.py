@@ -233,9 +233,9 @@ class RoleConfiguration(BaseModel):
 
 class GameSettings(BaseModel):
     """Game settings configurable by admin."""
-    reveal_role_on_death: bool = True  # Show dead player's role
-    show_vote_counts: bool = True      # Show vote counts during voting
-    avenger_chain_kill: bool = False   # If true, avenger revenge can chain (A->B->C)
+    reveal_role_on_death: bool = False  # Show dead player's role
+    show_vote_counts: bool = False      # Show vote counts during voting
+    avenger_chain_kill: bool = False    # If true, avenger revenge can chain (A->B->C)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
