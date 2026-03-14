@@ -8,7 +8,7 @@ export type RoleType =
   | 'witch' 
   | 'avenger';
 
-export type Team = 'village' | 'werewolf';
+export type Team = 'village' | 'werewolf' | 'none';
 
 export type GamePhase = 
   | 'lobby'
@@ -36,6 +36,7 @@ export interface Player {
   is_alive: boolean;
   is_connected: boolean;
   role?: Role | null;
+  death_cause?: 'werewolf' | 'poison' | 'voted_out' | 'avenger' | null;
 }
 
 export interface RoleInfo {
@@ -74,6 +75,11 @@ export interface GameState {
   can_vote: boolean;
   vote_counts?: Record<string, number>;
   my_vote?: VoteInfo;
+  last_night_deaths?: Array<{
+    player_id: string;
+    player_name: string;
+    cause: 'werewolf' | 'poison' | 'voted_out' | 'avenger';
+  }>;
 }
 
 export interface GameSettings {

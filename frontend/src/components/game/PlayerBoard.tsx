@@ -99,7 +99,15 @@ export default function PlayerBoard() {
               
               {/* Status */}
               {!player.is_alive && (
-                <div className="text-xs text-gray-500 mt-1">Dead</div>
+                <div className={`text-xs mt-1 ${
+                  player.death_cause === 'avenger' ? 'text-purple-400' : 'text-gray-500'
+                }`}>
+                  {player.death_cause === 'avenger' ? '⚔️ Avenged' : 
+                   player.death_cause === 'werewolf' ? '🐺 Killed' :
+                   player.death_cause === 'poison' ? '🧪 Poisoned' :
+                   player.death_cause === 'voted_out' ? '🗳️ Voted Out' :
+                   '💀 Dead'}
+                </div>
               )}
               {!player.is_connected && player.is_alive && (
                 <div className="text-xs text-yellow-500 mt-1">Offline</div>

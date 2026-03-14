@@ -25,6 +25,7 @@ class Team(str, Enum):
     """Team affiliations for win condition checking."""
     VILLAGE = "village"
     WEREWOLF = "werewolf"
+    NONE = "none"  # Tie - both teams eliminated
 
 
 class ActionResult(BaseModel):
@@ -482,7 +483,7 @@ class Avenger(BaseRole):
         if self.revenge_target:
             target = game.players.get(self.revenge_target)
             if target and target.is_alive:
-                target.kill(game, killer_id=self.player_id)
+                target.kill(game, killer_id=self.player_id, cause="avenger")
                 return ActionResult(
                     success=True,
                     message=f"The Avenger's curse strikes {target.name}!",

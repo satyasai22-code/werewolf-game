@@ -18,6 +18,17 @@ interface SkipStatus {
   players_ready: string[];
 }
 
+interface GameOverData {
+  winner: 'werewolf' | 'villager' | 'none';
+  message: string;
+  players: Array<{
+    id: string;
+    name: string;
+    role: { role_type: string; name: string; team: string } | null;
+    is_alive: boolean;
+  }>;
+}
+
 interface GameStore {
   // Connection state
   playerId: string | null;
@@ -31,6 +42,7 @@ interface GameStore {
   gameState: GameState | null;
   nightResult: NightResult | null;
   skipStatus: SkipStatus | null;
+  gameOverData: GameOverData | null;
   
   // UI state
   chatMessages: ChatMessage[];
@@ -67,6 +79,7 @@ export const useGameStore = create<GameStore>()(
       gameState: null,
       nightResult: null,
       skipStatus: null,
+      gameOverData: null,
       chatMessages: [],
       timerRemaining: null,
       error: null,
@@ -120,6 +133,7 @@ export const useGameStore = create<GameStore>()(
           gameState: null,
           nightResult: null,
           skipStatus: null,
+          gameOverData: null,
           chatMessages: [],
           timerRemaining: null,
           error: null,
@@ -260,9 +274,43 @@ function handleMessage(
       break;
 
     case 'vote_result':
-    case 'game_over':
-      // These are handled by full game state updates
+      // Vote result is just informational, game_state update will follow
       break;
+    
+    case 'game_over': {
+      // Store game over data and update game state to game_over phase
+      const gameOverData = data as {
+        winner: 'werewolf' | 'villager' | 'none';
+        message: string;
+        players: Array<{
+          id: string;
+          name: string;
+          role: { role_type: string; name: string; team: string } | null;
+          is_alive: boolean;
+          death_cause?: string;
+        }>;
+      };
+      
+      // Update gameState to show game_over phase with revealed players
+      const { gameState: currentGameState } = get();
+      if (currentGameState) {
+        set({
+          gameOverData,
+          gameState: {
+            ...currentGameState,
+            phase: 'game_over',
+            players: gameOverData.players.map(p => ({
+              id: p.id,
+              name: p.name,
+              is_alive: p.is_alive,
+              role: p.role,
+              death_cause: p.death_cause as 'werewolf' | 'poison' | 'voted_out' | 'avenger' | null | undefined,
+            })),
+          },
+        });
+      }
+      break;
+    }
 
     case 'chat_message':
       get().addChatMessage(data as ChatMessage);

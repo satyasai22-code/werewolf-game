@@ -230,8 +230,18 @@ class GameMessageHandler:
         if not game:
             return
         
+        # Check win condition before transitioning to night
+        # This handles cases like 1 werewolf vs 1 avenger where werewolves should win immediately
+        winner = game.check_win_condition()
+        if winner:
+            game.winner = winner
+            game.state_machine.transition_to(GamePhase.GAME_OVER)
+            await self._broadcast_game_over(room_code, winner)
+            return
+        
         # Reset night state
         game.night_state.reset()
+        game.last_night_deaths = []  # Clear last night deaths
         
         # Reset per-night role state
         for player in game.players.values():
@@ -438,16 +448,23 @@ class GameMessageHandler:
         elimination = game.process_vote_elimination()
         
         if elimination:
+            vote_result_data = {
+                "eliminated": True,
+                "player_id": elimination["player_id"],
+                "player_name": elimination["player_name"],
+                "vote_counts": elimination["vote_counts"],
+                "message": f"{elimination['player_name']} has been eliminated by the village!"
+            }
+            
+            # Include Avenger revenge info
+            if elimination.get("revenge_victim"):
+                vote_result_data["revenge_victim"] = elimination["revenge_victim"]
+                vote_result_data["message"] += f" {elimination['revenge_victim']} was avenged!"
+            
             await manager.broadcast_to_room(
                 {
                     "type": MessageType.VOTE_RESULT,
-                    "data": {
-                        "eliminated": True,
-                        "player_id": elimination["player_id"],
-                        "player_name": elimination["player_name"],
-                        "vote_counts": elimination["vote_counts"],
-                        "message": f"{elimination['player_name']} has been eliminated by the village!"
-                    }
+                    "data": vote_result_data
                 },
                 room_code
             )
@@ -488,15 +505,22 @@ class GameMessageHandler:
                 "id": player.id,
                 "name": player.name,
                 "role": player.role.to_dict(reveal=True) if player.role else None,
-                "is_alive": player.is_alive
+                "is_alive": player.is_alive,
+                "death_cause": player.death_cause
             })
+        
+        # Generate appropriate message
+        if winner == Team.NONE:
+            message = "It's a tie! Both teams have been eliminated!"
+        else:
+            message = f"The {winner.value} team wins!"
         
         await manager.broadcast_to_room(
             {
                 "type": MessageType.GAME_OVER,
                 "data": {
                     "winner": winner.value,
-                    "message": f"The {winner.value} team wins!",
+                    "message": message,
                     "players": players_revealed,
                     "death_log": game.death_log
                 }

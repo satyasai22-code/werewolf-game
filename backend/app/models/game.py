@@ -103,6 +103,7 @@ class Player(BaseModel):
     is_alive: bool = True
     is_connected: bool = True
     role: Optional[BaseRole] = None
+    death_cause: Optional[str] = None  # How this player died: werewolf, poison, voted_out, avenger
     joined_at: datetime = Field(default_factory=datetime.utcnow)
     
     class Config:
@@ -112,9 +113,10 @@ class Player(BaseModel):
         """Assign a role to this player."""
         self.role = create_role(role_type, self.id)
     
-    def kill(self, game: "Game", killer_id: Optional[str] = None) -> Optional[ActionResult]:
+    def kill(self, game: "Game", killer_id: Optional[str] = None, cause: Optional[str] = None) -> Optional[ActionResult]:
         """Kill this player and trigger death effects."""
         self.is_alive = False
+        self.death_cause = cause
         if self.role:
             return self.role.on_death(game, killer_id)
         return None
@@ -141,7 +143,8 @@ class Player(BaseModel):
                 "name": player.name,
                 "is_alive": player.is_alive,
                 "is_connected": player.is_connected,
-                "role": None  # Default hidden
+                "role": None,  # Default hidden
+                "death_cause": player.death_cause if not player.is_alive else None
             }
             
             # Reveal roles in certain conditions
@@ -171,6 +174,10 @@ class Player(BaseModel):
             if game.settings.show_vote_counts:
                 view["vote_counts"] = game.voting_state.get_vote_counts()
             view["my_vote"] = game.voting_state.votes.get(self.id)
+        
+        # Add last night deaths during day phases
+        if game.state_machine.current_phase in [GamePhase.DAY_ANNOUNCEMENT, GamePhase.DAY_DISCUSSION, GamePhase.DAY_VOTING]:
+            view["last_night_deaths"] = game.last_night_deaths
         
         return view
     
@@ -253,6 +260,7 @@ class Game(BaseModel):
     # Game results
     winner: Optional[Team] = None
     death_log: List[Dict[str, Any]] = Field(default_factory=list)
+    last_night_deaths: List[Dict[str, Any]] = Field(default_factory=list)
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
@@ -347,15 +355,49 @@ class Game(BaseModel):
         alive_wolves = len(self.get_alive_werewolves())
         alive_villagers = len(self.get_alive_villagers())
         
+        # Tie - both teams eliminated (e.g., Avenger takes last werewolf)
+        if alive_wolves == 0 and alive_villagers == 0:
+            return Team.NONE
+        
         # Village wins if all werewolves dead
         if alive_wolves == 0:
             return Team.VILLAGE
         
-        # Werewolves win if they equal or outnumber villagers
-        if alive_wolves >= alive_villagers:
+        # Werewolves win if no villagers left
+        if alive_villagers == 0:
             return Team.WEREWOLF
         
+        # Werewolves win if they equal or outnumber villagers
+        # BUT only if no villager can threaten them (could cause tie)
+        if alive_wolves >= alive_villagers:
+            if not self._can_villagers_threaten_werewolves():
+                return Team.WEREWOLF
+        
         return None
+    
+    def _can_villagers_threaten_werewolves(self) -> bool:
+        """
+        Check if any alive villager can still kill or take down a werewolf.
+        If so, game should continue as there's potential for a tie.
+        """
+        alive_werewolf_ids = {p.id for p in self.get_alive_werewolves()}
+        
+        for player in self.get_alive_villagers():
+            if not player.role:
+                continue
+            
+            # Witch with poison can kill a werewolf
+            if player.role.role_type == RoleType.WITCH:
+                if player.role.has_poison:
+                    return True
+            
+            # Avenger with target locked on a werewolf
+            # If avenger dies, the werewolf dies too (possible tie)
+            if player.role.role_type == RoleType.AVENGER:
+                if player.role.target_locked and player.role.revenge_target in alive_werewolf_ids:
+                    return True
+        
+        return False
     
     def get_players_with_night_actions(self) -> List[str]:
         """Get IDs of alive players who have night actions."""
@@ -401,7 +443,7 @@ class Game(BaseModel):
         if werewolf_kill:
             victim = self.players.get(werewolf_kill)
             if victim and victim.is_alive:
-                death_result = victim.kill(self, killer_id="werewolves")
+                death_result = victim.kill(self, killer_id="werewolves", cause="werewolf")
                 deaths.append({
                     "player_id": werewolf_kill,
                     "player_name": victim.name,
@@ -422,7 +464,7 @@ class Game(BaseModel):
         if self.night_state.witch_poison_target:
             victim = self.players.get(self.night_state.witch_poison_target)
             if victim and victim.is_alive:
-                death_result = victim.kill(self, killer_id="witch")
+                death_result = victim.kill(self, killer_id="witch", cause="poison")
                 deaths.append({
                     "player_id": victim.id,
                     "player_name": victim.name,
@@ -437,8 +479,9 @@ class Game(BaseModel):
                             "cause": "avenger"
                         })
         
-        # Log deaths
+        # Log deaths and store last night deaths
         self.death_log.extend(deaths)
+        self.last_night_deaths = deaths
         
         return deaths
     
@@ -450,7 +493,7 @@ class Game(BaseModel):
         if target_id:
             victim = self.players.get(target_id)
             if victim:
-                death_result = victim.kill(self, killer_id="village")
+                death_result = victim.kill(self, killer_id="village", cause="voted_out")
                 death_info = {
                     "player_id": victim.id,
                     "player_name": victim.name,

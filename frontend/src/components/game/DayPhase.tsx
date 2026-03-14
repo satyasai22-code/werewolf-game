@@ -14,6 +14,32 @@ export default function DayPhase() {
     send('skip_discussion');
   };
 
+  const getDeathMessage = (cause: string) => {
+    switch (cause) {
+      case 'werewolf':
+        return 'was killed by werewolves';
+      case 'poison':
+        return 'was poisoned';
+      case 'avenger':
+        return 'was avenged';
+      default:
+        return 'died mysteriously';
+    }
+  };
+
+  const getDeathEmoji = (cause: string) => {
+    switch (cause) {
+      case 'werewolf':
+        return '🐺';
+      case 'poison':
+        return '🧪';
+      case 'avenger':
+        return '⚔️';
+      default:
+        return '💀';
+    }
+  };
+
   return (
     <div className="card p-8">
       <div className="text-center mb-6">
@@ -23,6 +49,33 @@ export default function DayPhase() {
           Discuss with other players and try to identify the werewolves!
         </p>
       </div>
+
+      {/* Last night deaths announcement */}
+      {gameState.last_night_deaths && gameState.last_night_deaths.length > 0 && (
+        <div className="mb-6 bg-red-900/30 border border-red-700 rounded-lg p-4">
+          <h3 className="font-bold text-red-400 mb-3 text-center">☠️ Last Night's Events</h3>
+          <div className="space-y-2">
+            {gameState.last_night_deaths.map((death, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-center gap-2 text-lg ${
+                  death.cause === 'avenger' ? 'text-purple-400' : 'text-red-300'
+                }`}
+              >
+                <span>{getDeathEmoji(death.cause)}</span>
+                <span className="font-bold">{death.player_name}</span>
+                <span>{getDeathMessage(death.cause)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {gameState.last_night_deaths && gameState.last_night_deaths.length === 0 && (
+        <div className="mb-6 bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
+          <span className="text-green-400">🌅 It was a peaceful night. No one died!</span>
+        </div>
+      )}
 
       {/* Skip to voting button */}
       {gameState.is_alive && (
