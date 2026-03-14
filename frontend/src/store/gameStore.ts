@@ -311,7 +311,11 @@ function handleMessage(
                 is_ready: existingPlayer?.is_ready ?? false,
                 is_alive: p.is_alive,
                 is_connected: existingPlayer?.is_connected ?? true,
-                role: p.role,
+                role: p.role ? {
+                  role_type: p.role.role_type as 'werewolf' | 'villager' | 'seer' | 'doctor' | 'witch' | 'avenger' | 'unknown',
+                  team: p.role.team as 'village' | 'werewolf' | 'none' | 'unknown',
+                  name: p.role.name,
+                } : null,
                 death_cause: p.death_cause as 'werewolf' | 'poison' | 'voted_out' | 'avenger' | null | undefined,
               };
             }),
