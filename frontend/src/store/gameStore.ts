@@ -12,6 +12,12 @@ interface NightResult {
   };
 }
 
+interface SkipStatus {
+  skip_count: number;
+  required: number;
+  players_ready: string[];
+}
+
 interface GameStore {
   // Connection state
   playerId: string | null;
@@ -24,6 +30,7 @@ interface GameStore {
   lobbyState: LobbyState | null;
   gameState: GameState | null;
   nightResult: NightResult | null;
+  skipStatus: SkipStatus | null;
   
   // UI state
   chatMessages: ChatMessage[];
@@ -59,6 +66,7 @@ export const useGameStore = create<GameStore>()(
       lobbyState: null,
       gameState: null,
       nightResult: null,
+      skipStatus: null,
       chatMessages: [],
       timerRemaining: null,
       error: null,
@@ -111,6 +119,7 @@ export const useGameStore = create<GameStore>()(
           lobbyState: null,
           gameState: null,
           nightResult: null,
+          skipStatus: null,
           chatMessages: [],
           timerRemaining: null,
           error: null,
@@ -201,7 +210,9 @@ function handleMessage(
     case 'game_state':
       // Clear lobbyState when game starts to prevent navigation conflicts
       // Clear nightResult when phase changes
-      set({ gameState: data as GameState, lobbyState: null, nightResult: null });
+      // Clear skipStatus when phase changes
+      // DON'T clear timerRemaining - it's managed separately by timer_update
+      set({ gameState: data as GameState, lobbyState: null, nightResult: null, skipStatus: null });
       break;
 
     case 'player_joined':
@@ -259,6 +270,10 @@ function handleMessage(
 
     case 'timer_update':
       set({ timerRemaining: (data as { remaining: number }).remaining });
+      break;
+
+    case 'skip_status':
+      set({ skipStatus: data as { skip_count: number; required: number; players_ready: string[] } });
       break;
 
     case 'error':

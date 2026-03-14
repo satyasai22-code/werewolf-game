@@ -1,11 +1,18 @@
 import { useGameStore } from '../../store';
 
 export default function DayPhase() {
-  const { gameState } = useGameStore();
+  const { gameState, playerId, skipStatus, send } = useGameStore();
 
   if (!gameState) return null;
 
   const aliveCount = gameState.players.filter((p) => p.is_alive).length;
+  const isReady = skipStatus?.players_ready?.includes(playerId || '') || false;
+  const skipCount = skipStatus?.skip_count || 0;
+  const requiredCount = skipStatus?.required || aliveCount;
+
+  const handleSkipToggle = () => {
+    send('skip_discussion');
+  };
 
   return (
     <div className="card p-8">
@@ -16,6 +23,26 @@ export default function DayPhase() {
           Discuss with other players and try to identify the werewolves!
         </p>
       </div>
+
+      {/* Skip to voting button */}
+      {gameState.is_alive && (
+        <div className="mb-6 text-center">
+          <button
+            onClick={handleSkipToggle}
+            className={`btn ${isReady ? 'bg-green-600 hover:bg-green-700' : 'btn-primary'}`}
+          >
+            {isReady ? '✓ Ready to Vote' : 'Skip to Voting'}
+          </button>
+          <div className="text-sm text-gray-400 mt-2">
+            {skipCount}/{requiredCount} players ready to vote
+          </div>
+          {skipCount > 0 && skipCount < requiredCount && (
+            <div className="text-xs text-gray-500 mt-1">
+              Waiting for {requiredCount - skipCount} more player(s)...
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Discussion tips */}
       <div className="bg-werewolf-dark/50 rounded-lg p-6">

@@ -27,6 +27,7 @@ class MessageType:
     NIGHT_ACTION = "night_action"
     CAST_VOTE = "cast_vote"
     CHAT_MESSAGE = "chat_message"
+    SKIP_DISCUSSION = "skip_discussion"
     
     # Server -> Client
     ROOM_STATE = "room_state"
@@ -72,6 +73,7 @@ class GameMessageHandler:
             MessageType.NIGHT_ACTION: self._handle_night_action,
             MessageType.CAST_VOTE: self._handle_cast_vote,
             MessageType.CHAT_MESSAGE: self._handle_chat_message,
+            MessageType.SKIP_DISCUSSION: self._handle_skip_discussion,
         }
         
         handler = handlers.get(msg_type)
@@ -345,6 +347,7 @@ class GameMessageHandler:
         
         game.state_machine.transition_to(GamePhase.DAY_DISCUSSION)
         game.voting_state.reset()
+        game.discussion_skip_requests.clear()  # Reset skip requests for new round
         
         await manager.broadcast_game_state(room_code, game)
         await self._start_phase_timer(room_code, GamePhase.DAY_DISCUSSION)
@@ -555,6 +558,52 @@ class GameMessageHandler:
                     },
                     room_code
                 )
+    
+    async def _handle_skip_discussion(
+        self, 
+        room_code: str, 
+        player_id: str, 
+        data: Dict
+    ) -> None:
+        """Handle player requesting to skip to voting."""
+        game = self.game_service.get_game(room_code)
+        if not game:
+            return
+        
+        if game.state_machine.current_phase != GamePhase.DAY_DISCUSSION:
+            return
+        
+        player = game.players.get(player_id)
+        if not player or not player.is_alive:
+            return
+        
+        # Toggle skip request
+        if player_id in game.discussion_skip_requests:
+            game.discussion_skip_requests.discard(player_id)
+        else:
+            game.discussion_skip_requests.add(player_id)
+        
+        alive_players = [p for p in game.players.values() if p.is_alive]
+        skip_count = len(game.discussion_skip_requests)
+        required = len(alive_players)
+        
+        # Broadcast skip status to all players
+        await manager.broadcast_to_room(
+            {
+                "type": "skip_status",
+                "data": {
+                    "skip_count": skip_count,
+                    "required": required,
+                    "players_ready": list(game.discussion_skip_requests)
+                }
+            },
+            room_code
+        )
+        
+        # If all alive players want to skip, transition to voting
+        if skip_count >= required:
+            await self._cancel_phase_timer(room_code)
+            await self._transition_to_voting(room_code)
     
     async def _start_phase_timer(self, room_code: str, phase: GamePhase) -> None:
         """Start a timer for the current phase."""

@@ -247,6 +247,9 @@ class Game(BaseModel):
     night_state: NightState = Field(default_factory=NightState)
     voting_state: VotingState = Field(default_factory=VotingState)
     
+    # Discussion skip tracking
+    discussion_skip_requests: Set[str] = Field(default_factory=set)
+    
     # Game results
     winner: Optional[Team] = None
     death_log: List[Dict[str, Any]] = Field(default_factory=list)
