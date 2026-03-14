@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '../../store';
 
 export default function NightPhase() {
-  const { gameState, send } = useGameStore();
+  const { gameState, nightResult, send } = useGameStore();
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [actionSubmitted, setActionSubmitted] = useState(false);
 
@@ -82,9 +82,26 @@ export default function NightPhase() {
       </div>
 
       {actionSubmitted ? (
-        <div className="text-center text-green-400">
-          <div className="text-2xl mb-2">✓</div>
-          <p>Action submitted! Waiting for others...</p>
+        <div className="text-center">
+          <div className="text-2xl mb-2 text-green-400">✓</div>
+          {nightResult ? (
+            <div className="space-y-2">
+              <p className={nightResult.success ? 'text-green-400' : 'text-red-400'}>
+                {nightResult.message}
+              </p>
+              {nightResult.data?.revealed_role && (
+                <div className="mt-4 p-4 bg-purple-900/30 rounded-lg border border-purple-500">
+                  <div className="text-purple-300 text-sm mb-1">Role Revealed:</div>
+                  <div className="text-2xl font-bold capitalize">
+                    {nightResult.data.revealed_role === 'werewolf' ? '🐺' : '👤'} {nightResult.data.revealed_role}
+                  </div>
+                </div>
+              )}
+              <p className="text-gray-500 text-sm mt-4">Waiting for others...</p>
+            </div>
+          ) : (
+            <p className="text-green-400">Action submitted! Waiting for others...</p>
+          )}
         </div>
       ) : (
         <>

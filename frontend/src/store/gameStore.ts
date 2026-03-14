@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, LobbyState, ChatMessage, WebSocketMessage } from '../types';
 
+interface NightResult {
+  success: boolean;
+  message: string;
+  data?: {
+    target_id?: string;
+    target_name?: string;
+    revealed_role?: string;
+  };
+}
+
 interface GameStore {
   // Connection state
   playerId: string | null;
@@ -13,6 +23,7 @@ interface GameStore {
   // Game state
   lobbyState: LobbyState | null;
   gameState: GameState | null;
+  nightResult: NightResult | null;
   
   // UI state
   chatMessages: ChatMessage[];
@@ -47,6 +58,7 @@ export const useGameStore = create<GameStore>()(
       isConnected: false,
       lobbyState: null,
       gameState: null,
+      nightResult: null,
       chatMessages: [],
       timerRemaining: null,
       error: null,
@@ -98,6 +110,7 @@ export const useGameStore = create<GameStore>()(
           isConnected: false,
           lobbyState: null,
           gameState: null,
+          nightResult: null,
           chatMessages: [],
           timerRemaining: null,
           error: null,
@@ -187,7 +200,8 @@ function handleMessage(
 
     case 'game_state':
       // Clear lobbyState when game starts to prevent navigation conflicts
-      set({ gameState: data as GameState, lobbyState: null });
+      // Clear nightResult when phase changes
+      set({ gameState: data as GameState, lobbyState: null, nightResult: null });
       break;
 
     case 'player_joined':
@@ -217,8 +231,8 @@ function handleMessage(
       break;
 
     case 'night_result':
-      // Night action result - shown to specific players
-      console.log('Night result:', data);
+      // Night action result - shown to specific players (e.g., Seer sees revealed role)
+      set({ nightResult: data as NightResult });
       break;
 
     case 'vote_update':
