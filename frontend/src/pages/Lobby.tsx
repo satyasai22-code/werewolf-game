@@ -12,7 +12,6 @@ export default function Lobby() {
   
   const {
     playerId,
-    playerName,
     isAdmin,
     isConnected,
     lobbyState,

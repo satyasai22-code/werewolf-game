@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '../../store';
 
 export default function NightPhase() {
-  const { gameState, playerId, send } = useGameStore();
+  const { gameState, send } = useGameStore();
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
   const [actionSubmitted, setActionSubmitted] = useState(false);
 

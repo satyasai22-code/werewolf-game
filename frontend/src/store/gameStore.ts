@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, LobbyState, Player, ChatMessage, WebSocketMessage, RoleType } from '../types';
+import type { GameState, LobbyState, ChatMessage, WebSocketMessage } from '../types';
 
 interface GameStore {
   // Connection state
