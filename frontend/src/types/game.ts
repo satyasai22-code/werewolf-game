@@ -76,12 +76,18 @@ export interface GameState {
   my_vote?: VoteInfo;
 }
 
+export interface GameSettings {
+  reveal_role_on_death: boolean;
+  show_vote_counts: boolean;
+}
+
 export interface LobbyState {
   id: string;
   room_code: string;
   phase: GamePhase;
   players: Player[];
   role_config: Record<RoleType, number>;
+  settings: GameSettings;
   player_count: number;
   required_players: number;
   all_ready: boolean;

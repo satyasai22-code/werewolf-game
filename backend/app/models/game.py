@@ -152,8 +152,9 @@ class Player(BaseModel):
                 if player.role and player.role.role_type == RoleType.WEREWOLF:
                     player_info["role"] = player.role.to_dict(reveal=True)
             elif not player.is_alive and game.state_machine.current_phase != GamePhase.NIGHT:
-                # Dead players' roles are revealed during day
-                player_info["role"] = player.role.to_dict(reveal=True) if player.role else None
+                # Dead players' roles are revealed during day (if setting enabled)
+                if game.settings.reveal_role_on_death:
+                    player_info["role"] = player.role.to_dict(reveal=True) if player.role else None
             
             view["players"].append(player_info)
         
@@ -166,7 +167,9 @@ class Player(BaseModel):
         # Add voting info during day voting
         if game.state_machine.current_phase == GamePhase.DAY_VOTING and self.is_alive:
             view["can_vote"] = True
-            view["vote_counts"] = game.voting_state.get_vote_counts()
+            # Only show vote counts if setting enabled
+            if game.settings.show_vote_counts:
+                view["vote_counts"] = game.voting_state.get_vote_counts()
             view["my_vote"] = game.voting_state.votes.get(self.id)
         
         return view
@@ -220,6 +223,18 @@ class RoleConfiguration(BaseModel):
         return roles
 
 
+class GameSettings(BaseModel):
+    """Game settings configurable by admin."""
+    reveal_role_on_death: bool = True  # Show dead player's role
+    show_vote_counts: bool = True      # Show vote counts during voting
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "reveal_role_on_death": self.reveal_role_on_death,
+            "show_vote_counts": self.show_vote_counts,
+        }
+
+
 class Game(BaseModel):
     """Main game model containing all game state."""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -228,6 +243,7 @@ class Game(BaseModel):
     state_machine: GameStateMachine = Field(default_factory=GameStateMachine)
     phase_timer: PhaseTimer = Field(default_factory=PhaseTimer)
     role_config: RoleConfiguration = Field(default_factory=RoleConfiguration)
+    settings: GameSettings = Field(default_factory=GameSettings)
     night_state: NightState = Field(default_factory=NightState)
     voting_state: VotingState = Field(default_factory=VotingState)
     
@@ -465,6 +481,7 @@ class Game(BaseModel):
             "role_config": {
                 k.value: v for k, v in self.role_config.role_counts.items()
             },
+            "settings": self.settings.to_dict(),
             "player_count": len(self.players),
             "required_players": self.role_config.get_total_players(),
             "all_ready": self.all_players_ready(),

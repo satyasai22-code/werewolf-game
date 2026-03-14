@@ -22,6 +22,7 @@ class MessageType:
     LEAVE_ROOM = "leave_room"
     TOGGLE_READY = "toggle_ready"
     UPDATE_ROLE_CONFIG = "update_role_config"
+    UPDATE_SETTINGS = "update_settings"
     START_GAME = "start_game"
     NIGHT_ACTION = "night_action"
     CAST_VOTE = "cast_vote"
@@ -66,6 +67,7 @@ class GameMessageHandler:
         handlers = {
             MessageType.TOGGLE_READY: self._handle_toggle_ready,
             MessageType.UPDATE_ROLE_CONFIG: self._handle_update_role_config,
+            MessageType.UPDATE_SETTINGS: self._handle_update_settings,
             MessageType.START_GAME: self._handle_start_game,
             MessageType.NIGHT_ACTION: self._handle_night_action,
             MessageType.CAST_VOTE: self._handle_cast_vote,
@@ -145,6 +147,37 @@ class GameMessageHandler:
                     "config_valid": valid,
                     "config_message": message
                 }
+            },
+            room_code
+        )
+    
+    async def _handle_update_settings(
+        self, 
+        room_code: str, 
+        player_id: str, 
+        data: Dict
+    ) -> None:
+        """Handle admin updating game settings."""
+        game = self.game_service.get_game(room_code)
+        if not game:
+            return
+        
+        player = game.players.get(player_id)
+        if not player or not player.is_admin:
+            await self._send_error(player_id, "Only admin can update settings")
+            return
+        
+        # Update settings
+        if "reveal_role_on_death" in data:
+            game.settings.reveal_role_on_death = bool(data["reveal_role_on_death"])
+        if "show_vote_counts" in data:
+            game.settings.show_vote_counts = bool(data["show_vote_counts"])
+        
+        # Broadcast updated room state
+        await manager.broadcast_to_room(
+            {
+                "type": MessageType.ROOM_STATE,
+                "data": game.to_lobby_dict()
             },
             room_code
         )

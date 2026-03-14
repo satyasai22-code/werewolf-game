@@ -163,6 +163,60 @@ export default function Lobby() {
                 onUpdate={updateRoleConfig}
               />
             </div>
+
+            {/* Game Settings */}
+            <div className="card p-6 mt-6">
+              <h2 className="text-xl font-bold mb-4">Game Settings</h2>
+              <div className="space-y-4">
+                {/* Reveal Role on Death */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Reveal Role on Death</div>
+                    <div className="text-sm text-gray-400">Show dead player's role to everyone</div>
+                  </div>
+                  <button
+                    onClick={() => send('update_settings', { reveal_role_on_death: !lobbyState.settings?.reveal_role_on_death })}
+                    disabled={!isAdmin}
+                    className={`w-14 h-8 rounded-full transition-colors ${
+                      lobbyState.settings?.reveal_role_on_death 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-600'
+                    } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${
+                      lobbyState.settings?.reveal_role_on_death ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Show Vote Counts */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Show Vote Counts</div>
+                    <div className="text-sm text-gray-400">Display live vote counts during voting phase</div>
+                  </div>
+                  <button
+                    onClick={() => send('update_settings', { show_vote_counts: !lobbyState.settings?.show_vote_counts })}
+                    disabled={!isAdmin}
+                    className={`w-14 h-8 rounded-full transition-colors ${
+                      lobbyState.settings?.show_vote_counts 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-600'
+                    } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${
+                      lobbyState.settings?.show_vote_counts ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {!isAdmin && (
+                  <div className="text-sm text-gray-500 italic">
+                    Only the admin can change settings
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
