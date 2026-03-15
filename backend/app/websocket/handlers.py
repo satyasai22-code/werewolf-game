@@ -180,6 +180,8 @@ class GameMessageHandler:
             game.settings.reveal_poison_kills = bool(data["reveal_poison_kills"])
         if "reveal_avenger_kills" in data:
             game.settings.reveal_avenger_kills = bool(data["reveal_avenger_kills"])
+        if "hide_role_config" in data:
+            game.settings.hide_role_config = bool(data["hide_role_config"])
         
         # Broadcast updated room state
         await manager.broadcast_to_room(
@@ -209,6 +211,18 @@ class GameMessageHandler:
         if not game.all_players_ready():
             await self._send_error(player_id, "All players must be ready")
             return
+        
+        # If blind mode, generate random roles for current player count
+        if game.settings.hide_role_config:
+            player_count = len(game.players)
+            if player_count < 4:
+                await self._send_error(player_id, "Minimum 4 players required")
+                return
+            random_config = self.game_service.generate_random_roles(player_count)
+            # Convert string keys to RoleType enum
+            game.role_config.role_counts = {
+                RoleType(k): v for k, v in random_config.items()
+            }
         
         if len(game.players) != game.role_config.get_total_players():
             await self._send_error(

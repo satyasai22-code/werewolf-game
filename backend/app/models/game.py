@@ -260,6 +260,7 @@ class GameSettings(BaseModel):
     avenger_chain_kill: bool = False    # If true, avenger revenge can chain (A->B->C)
     reveal_poison_kills: bool = False   # Show when witch poisoned someone
     reveal_avenger_kills: bool = True   # Show when avenger killed someone
+    hide_role_config: bool = False      # Blind mode - hide roles, generate random on start
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -268,6 +269,7 @@ class GameSettings(BaseModel):
             "avenger_chain_kill": self.avenger_chain_kill,
             "reveal_poison_kills": self.reveal_poison_kills,
             "reveal_avenger_kills": self.reveal_avenger_kills,
+            "hide_role_config": self.hide_role_config,
         }
 
 

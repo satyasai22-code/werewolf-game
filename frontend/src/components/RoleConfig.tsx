@@ -27,6 +27,15 @@ const ROLE_ICONS: Record<RoleType, string> = {
   avenger: '⚔️',
 };
 
+const ROLE_SYMBOLS: Record<RoleType, string> = {
+  werewolf: '🌙',  // Night action
+  villager: '',
+  seer: '👁️',      // Reveals
+  doctor: '🛡️',    // Protects
+  witch: '⚗️',     // Potions
+  avenger: '💀',   // Revenge
+};
+
 const PLAYER_PRESETS = [4, 5, 6, 7, 8, 9, 10, 12, 15];
 
 export default function RoleConfig({ 
@@ -37,6 +46,7 @@ export default function RoleConfig({
 }: RoleConfigProps) {
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [selectedPlayerCount, setSelectedPlayerCount] = useState<number | null>(null);
+  const [hoveredRole, setHoveredRole] = useState<RoleType | null>(null);
 
   const handleChange = (roleType: RoleType, delta: number) => {
     if (!isAdmin) return;
@@ -77,7 +87,6 @@ export default function RoleConfig({
       console.error('Failed to randomize roles:', error);
     } finally {
       setIsRandomizing(false);
-      // Keep selection visible briefly for feedback
       setTimeout(() => setSelectedPlayerCount(null), 500);
     }
   };
@@ -86,98 +95,99 @@ export default function RoleConfig({
 
   return (
     <div>
-      {/* Randomize Section */}
+      {/* Randomize Section - Compact */}
       {isAdmin && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-600/50">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🎲</span>
-            <h3 className="font-bold text-purple-300">Quick Random Setup</h3>
+        <div className="mb-4 p-3 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-600/50">
+          <div className="flex items-center gap-2 mb-2">
+            <span>🎲</span>
+            <span className="font-bold text-purple-300 text-sm">Quick Setup</span>
+            <span className="text-xs text-gray-500">— click player count:</span>
           </div>
-          <p className="text-sm text-gray-400 mb-3">
-            Click a player count to generate a random balanced configuration:
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {PLAYER_PRESETS.map((count) => (
               <button
                 key={count}
                 onClick={() => handleRandomize(count)}
                 disabled={isRandomizing}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                className={`px-3 py-1 rounded text-sm font-bold transition-all ${
                   selectedPlayerCount === count
                     ? 'bg-purple-600 text-white scale-105'
-                    : 'bg-gray-700 hover:bg-purple-700 text-gray-200 hover:text-white'
-                } ${isRandomizing ? 'opacity-50 cursor-wait' : ''}`}
+                    : 'bg-gray-700 hover:bg-purple-700 text-gray-200'
+                } ${isRandomizing ? 'opacity-50' : ''}`}
               >
-                {count} 👥
+                {count}
               </button>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            ✨ Guarantees werewolves + random mix of special roles
-          </p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Role Grid - Compact */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         {ROLE_ORDER.map((roleType) => {
           const role = roles[roleType];
           const count = roleConfig[roleType] || 0;
           const isWerewolf = roleType === 'werewolf';
+          const isHovered = hoveredRole === roleType;
 
           return (
             <div
               key={roleType}
-              className={`role-card ${
-                isWerewolf ? 'role-card-werewolf' : 'role-card-village'
-              }`}
+              className={`relative p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                isWerewolf 
+                  ? 'border-red-600/50 bg-red-900/20 hover:border-red-500' 
+                  : 'border-green-600/50 bg-green-900/20 hover:border-green-500'
+              } ${count > 0 ? 'ring-1 ring-white/20' : ''}`}
+              onMouseEnter={() => setHoveredRole(roleType)}
+              onMouseLeave={() => setHoveredRole(null)}
+              onClick={() => !isAdmin && setHoveredRole(isHovered ? null : roleType)}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{ROLE_ICONS[roleType]}</span>
-                  <div>
-                    <h3 className="font-bold text-white">
-                      {role?.name || roleType}
-                    </h3>
-                    <span className={`text-xs ${
-                      isWerewolf ? 'text-red-400' : 'text-green-400'
-                    }`}>
-                      {isWerewolf ? 'Werewolf Team' : 'Village Team'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Counter */}
-                <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleChange(roleType, -1)}
-                      disabled={count === 0}
-                      className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      -
-                    </button>
-                  )}
-                  <span className="w-8 text-center text-xl font-bold">
-                    {count}
+              {/* Main Content */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl">{ROLE_ICONS[roleType]}</span>
+                  <span className="font-bold text-sm text-white truncate">
+                    {role?.name || roleType}
                   </span>
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleChange(roleType, 1)}
-                      className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600"
-                    >
-                      +
-                    </button>
-                  )}
                 </div>
+                {ROLE_SYMBOLS[roleType] && (
+                  <span className="text-xs opacity-60" title={role?.description}>
+                    {ROLE_SYMBOLS[roleType]}
+                  </span>
+                )}
+              </div>
+              
+              {/* Counter Row */}
+              <div className="flex items-center justify-center gap-1 mt-2">
+                {isAdmin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleChange(roleType, -1); }}
+                    disabled={count === 0}
+                    className="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-30 text-sm"
+                  >
+                    −
+                  </button>
+                )}
+                <span className={`w-6 text-center text-lg font-bold ${count > 0 ? 'text-white' : 'text-gray-500'}`}>
+                  {count}
+                </span>
+                {isAdmin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleChange(roleType, 1); }}
+                    className="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-sm"
+                  >
+                    +
+                  </button>
+                )}
               </div>
 
-              <p className="text-sm text-gray-400">
-                {role?.description || 'Loading...'}
-              </p>
-
-              {role?.has_night_action && (
-                <div className="mt-2 text-xs text-blue-400">
-                  ✨ Has night action
+              {/* Hover Tooltip Description */}
+              {isHovered && role?.description && (
+                <div className="absolute z-20 left-0 right-0 top-full mt-1 p-2 bg-gray-900 border border-gray-600 rounded-lg shadow-xl text-xs text-gray-300">
+                  {role.description}
+                  {role.has_night_action && (
+                    <div className="mt-1 text-blue-400">✨ Has night action</div>
+                  )}
                 </div>
               )}
             </div>
@@ -185,17 +195,10 @@ export default function RoleConfig({
         })}
       </div>
 
-      {/* Total count */}
-      <div className="mt-6 p-4 bg-werewolf-dark rounded-lg border border-gray-700">
-        <div className="flex items-center justify-between">
-          <span className="text-gray-400">Total Players Required:</span>
-          <span className="text-2xl font-bold text-white">{totalPlayers}</span>
-        </div>
-        {!isAdmin && (
-          <p className="mt-2 text-sm text-gray-500">
-            Only the admin can modify the role configuration.
-          </p>
-        )}
+      {/* Total - Compact */}
+      <div className="mt-3 flex items-center justify-between text-sm">
+        <span className="text-gray-400">Total Players:</span>
+        <span className="text-lg font-bold text-white">{totalPlayers}</span>
       </div>
     </div>
   );
