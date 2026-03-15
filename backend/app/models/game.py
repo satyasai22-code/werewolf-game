@@ -138,13 +138,24 @@ class Player(BaseModel):
         
         # Add visible player info (hide roles for most players)
         for player in game.players.values():
+            # Determine death cause display based on settings
+            death_cause_display = None
+            if not player.is_alive:
+                cause = player.death_cause
+                if cause == "poison":
+                    death_cause_display = "poison" if game.settings.reveal_poison_kills else "werewolf"
+                elif cause == "avenger":
+                    death_cause_display = "avenger" if game.settings.reveal_avenger_kills else "werewolf"
+                else:
+                    death_cause_display = cause  # werewolf, voted_out stay as-is
+            
             player_info = {
                 "id": player.id,
                 "name": player.name,
                 "is_alive": player.is_alive,
                 "is_connected": player.is_connected,
                 "role": None,  # Default hidden
-                "death_cause": player.death_cause if not player.is_alive else None
+                "death_cause": death_cause_display
             }
             
             # Reveal roles in certain conditions
@@ -178,7 +189,18 @@ class Player(BaseModel):
         
         # Add last night deaths during day phases
         if game.state_machine.current_phase in [GamePhase.DAY_ANNOUNCEMENT, GamePhase.DAY_DISCUSSION, GamePhase.DAY_VOTING]:
-            view["last_night_deaths"] = game.last_night_deaths
+            # Filter death causes based on settings
+            filtered_deaths = []
+            for death in game.last_night_deaths:
+                cause = death["cause"]
+                if cause == "poison":
+                    display_cause = "poison" if game.settings.reveal_poison_kills else "werewolf"
+                elif cause == "avenger":
+                    display_cause = "avenger" if game.settings.reveal_avenger_kills else "werewolf"
+                else:
+                    display_cause = cause
+                filtered_deaths.append({**death, "cause": display_cause})
+            view["last_night_deaths"] = filtered_deaths
         
         return view
     
@@ -236,12 +258,16 @@ class GameSettings(BaseModel):
     reveal_role_on_death: bool = False  # Show dead player's role
     show_vote_counts: bool = False      # Show vote counts during voting
     avenger_chain_kill: bool = False    # If true, avenger revenge can chain (A->B->C)
+    reveal_poison_kills: bool = False   # Show when witch poisoned someone
+    reveal_avenger_kills: bool = True   # Show when avenger killed someone
     
     def to_dict(self) -> Dict[str, Any]:
         return {
             "reveal_role_on_death": self.reveal_role_on_death,
             "show_vote_counts": self.show_vote_counts,
             "avenger_chain_kill": self.avenger_chain_kill,
+            "reveal_poison_kills": self.reveal_poison_kills,
+            "reveal_avenger_kills": self.reveal_avenger_kills,
         }
 
 

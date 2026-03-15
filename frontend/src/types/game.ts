@@ -86,6 +86,8 @@ export interface GameSettings {
   reveal_role_on_death: boolean;
   show_vote_counts: boolean;
   avenger_chain_kill: boolean;
+  reveal_poison_kills: boolean;
+  reveal_avenger_kills: boolean;
 }
 
 export interface LobbyState {

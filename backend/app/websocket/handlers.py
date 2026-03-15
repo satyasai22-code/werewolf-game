@@ -174,6 +174,12 @@ class GameMessageHandler:
             game.settings.reveal_role_on_death = bool(data["reveal_role_on_death"])
         if "show_vote_counts" in data:
             game.settings.show_vote_counts = bool(data["show_vote_counts"])
+        if "avenger_chain_kill" in data:
+            game.settings.avenger_chain_kill = bool(data["avenger_chain_kill"])
+        if "reveal_poison_kills" in data:
+            game.settings.reveal_poison_kills = bool(data["reveal_poison_kills"])
+        if "reveal_avenger_kills" in data:
+            game.settings.reveal_avenger_kills = bool(data["reveal_avenger_kills"])
         
         # Broadcast updated room state
         await manager.broadcast_to_room(

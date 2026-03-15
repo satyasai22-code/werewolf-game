@@ -231,6 +231,48 @@ export default function Lobby() {
                   </button>
                 </div>
 
+                {/* Reveal Death Cause */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Show Poison Kills</div>
+                    <div className="text-sm text-gray-400">Reveal when witch poisoned someone</div>
+                  </div>
+                  <button
+                    onClick={() => send('update_settings', { reveal_poison_kills: !lobbyState.settings?.reveal_poison_kills })}
+                    disabled={!isAdmin}
+                    className={`w-14 h-8 rounded-full transition-colors ${
+                      lobbyState.settings?.reveal_poison_kills 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-600'
+                    } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${
+                      lobbyState.settings?.reveal_poison_kills ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Reveal Avenger Kills */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Show Avenger Kills</div>
+                    <div className="text-sm text-gray-400">Reveal when avenger took revenge</div>
+                  </div>
+                  <button
+                    onClick={() => send('update_settings', { reveal_avenger_kills: !lobbyState.settings?.reveal_avenger_kills })}
+                    disabled={!isAdmin}
+                    className={`w-14 h-8 rounded-full transition-colors ${
+                      lobbyState.settings?.reveal_avenger_kills 
+                        ? 'bg-green-600' 
+                        : 'bg-gray-600'
+                    } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${
+                      lobbyState.settings?.reveal_avenger_kills ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
                 {!isAdmin && (
                   <div className="text-sm text-gray-500 italic">
                     Only the admin can change settings
