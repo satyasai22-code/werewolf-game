@@ -326,7 +326,7 @@ class Doctor(BaseRole):
             "has_action": True,
             "prompt": "Choose a player to protect tonight",
             "action_type": "heal",
-            "restriction": f"Cannot heal: {self.last_healed}" if self.last_healed else None
+            "restriction": "Cannot heal the same player twice in a row" if self.last_healed else None
         }
 
 
