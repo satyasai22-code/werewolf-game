@@ -84,8 +84,8 @@ export default function ChatPanel() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-gray-700">
+      {/* Input - Sticky at bottom */}
+      <div className="sticky bottom-0 p-3 border-t border-gray-700 bg-werewolf-darker">
         {canChat && (!isNight || isWerewolf) ? (
           <div className="flex gap-2">
             <input

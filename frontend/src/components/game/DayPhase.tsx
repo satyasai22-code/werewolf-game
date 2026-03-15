@@ -41,77 +41,74 @@ export default function DayPhase() {
   };
 
   return (
-    <div className="card p-8">
-      <div className="text-center mb-6">
-        <div className="text-4xl mb-2">☀️</div>
-        <h2 className="text-xl font-bold text-yellow-400">Day Discussion</h2>
-        <p className="text-gray-400 mt-2">
-          Discuss with other players and try to identify the werewolves!
+    <div className="card p-4 lg:p-6">
+      <div className="text-center mb-4">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-3xl">☀️</span>
+          <h2 className="text-lg font-bold text-yellow-400">Day Discussion</h2>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">
+          Discuss and identify the werewolves!
         </p>
       </div>
 
-      {/* Last night deaths announcement */}
+      {/* Last night deaths announcement - compact */}
       {gameState.last_night_deaths && gameState.last_night_deaths.length > 0 && (
-        <div className="mb-6 bg-red-900/30 border border-red-700 rounded-lg p-4">
-          <h3 className="font-bold text-red-400 mb-3 text-center">☠️ Last Night's Events</h3>
-          <div className="space-y-2">
+        <div className="mb-4 bg-red-900/30 border border-red-700 rounded-lg p-3">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
             {gameState.last_night_deaths.map((death, index) => (
-              <div
+              <span
                 key={index}
-                className={`flex items-center justify-center gap-2 text-lg ${
+                className={`flex items-center gap-1 ${
                   death.cause === 'avenger' ? 'text-purple-400' : 'text-red-300'
                 }`}
               >
                 <span>{getDeathEmoji(death.cause)}</span>
                 <span className="font-bold">{death.player_name}</span>
-                <span>{getDeathMessage(death.cause)}</span>
-              </div>
+                <span className="text-sm">{getDeathMessage(death.cause)}</span>
+              </span>
             ))}
           </div>
         </div>
       )}
 
       {gameState.last_night_deaths && gameState.last_night_deaths.length === 0 && (
-        <div className="mb-6 bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
-          <span className="text-green-400">🌅 It was a peaceful night. No one died!</span>
+        <div className="mb-4 bg-green-900/30 border border-green-700 rounded-lg p-3 text-center text-sm">
+          <span className="text-green-400">🌅 Peaceful night - no one died!</span>
         </div>
       )}
 
-      {/* Skip to voting button */}
-      {gameState.is_alive && (
-        <div className="mb-6 text-center">
-          <button
-            onClick={handleSkipToggle}
-            className={`btn ${isReady ? 'bg-green-600 hover:bg-green-700' : 'btn-primary'}`}
-          >
-            {isReady ? '✓ Ready to Vote' : 'Skip to Voting'}
-          </button>
-          <div className="text-sm text-gray-400 mt-2">
-            {skipCount}/{requiredCount} players ready to vote
+      {/* Skip to voting + player count - inline */}
+      <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+        {gameState.is_alive && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSkipToggle}
+              className={`btn btn-sm ${isReady ? 'bg-green-600 hover:bg-green-700' : 'btn-primary'}`}
+            >
+              {isReady ? '✓ Ready' : 'Skip to Vote'}
+            </button>
+            <span className="text-sm text-gray-400">
+              {skipCount}/{requiredCount}
+            </span>
           </div>
-          {skipCount > 0 && skipCount < requiredCount && (
-            <div className="text-xs text-gray-500 mt-1">
-              Waiting for {requiredCount - skipCount} more player(s)...
-            </div>
-          )}
-        </div>
-      )}
+        )}
+        <span className="text-sm text-gray-400">
+          <span className="font-bold text-white">{aliveCount}</span> alive
+        </span>
+      </div>
 
-      {/* Discussion tips */}
-      <div className="bg-werewolf-dark/50 rounded-lg p-6">
-        <h3 className="font-bold text-gray-300 mb-3">💡 Discussion Tips</h3>
-        <ul className="space-y-2 text-gray-400 text-sm">
-          <li>• Pay attention to who seems nervous or overly defensive</li>
-          <li>• Look for inconsistencies in people's stories</li>
-          <li>• Consider who might benefit from last night's events</li>
-          <li>• Share information carefully - you might be talking to a werewolf!</li>
+      {/* Discussion tips - collapsed/compact */}
+      <details className="bg-werewolf-dark/50 rounded-lg">
+        <summary className="px-4 py-2 cursor-pointer text-gray-300 font-medium text-sm hover:text-white">
+          💡 Discussion Tips
+        </summary>
+        <ul className="px-4 pb-3 text-gray-400 text-xs space-y-1">
+          <li>• Watch for nervous or defensive behavior</li>
+          <li>• Look for story inconsistencies</li>
+          <li>• Consider who benefits from events</li>
         </ul>
-      </div>
-
-      {/* Player count */}
-      <div className="mt-6 text-center text-gray-400">
-        <span className="font-bold text-white">{aliveCount}</span> players remain alive
-      </div>
+      </details>
 
       {/* Status for dead players */}
       {!gameState.is_alive && (

@@ -74,27 +74,27 @@ export default function Game() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
       <GameHeader onLeave={handleLeave} />
 
       {/* Main Content */}
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative overflow-hidden">
         {/* Game Area */}
-        <div className="flex-1 p-4 pb-20 lg:pb-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-4">
           <div className="max-w-4xl mx-auto">
             {/* Player Board */}
             <PlayerBoard />
 
             {/* Phase Content */}
-            <div className="mt-6">
+            <div className="mt-4">
               {renderPhaseContent()}
             </div>
           </div>
         </div>
 
         {/* Chat Panel - Desktop */}
-        <div className="w-80 border-l border-gray-700 hidden lg:block">
+        <div className="w-80 border-l border-gray-700 hidden lg:flex lg:flex-col">
           <ChatPanel />
         </div>
 

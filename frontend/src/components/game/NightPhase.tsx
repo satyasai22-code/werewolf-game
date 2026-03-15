@@ -72,13 +72,15 @@ export default function NightPhase() {
   }
 
   return (
-    <div className="card p-8">
-      <div className="text-center mb-6">
-        <div className="text-4xl mb-2">{getRoleIcon()}</div>
-        <h2 className="text-xl font-bold text-blue-400">
-          {role?.name || night_prompt.role}
-        </h2>
-        <p className="text-gray-400 mt-2">{night_prompt.prompt}</p>
+    <div className="card p-4 lg:p-6">
+      <div className="text-center mb-4">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-3xl">{getRoleIcon()}</span>
+          <h2 className="text-lg font-bold text-blue-400">
+            {role?.name || night_prompt.role}
+          </h2>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">{night_prompt.prompt}</p>
       </div>
 
       {actionSubmitted ? (
@@ -90,14 +92,14 @@ export default function NightPhase() {
                 {nightResult.message}
               </p>
               {nightResult.data?.revealed_role && (
-                <div className="mt-4 p-4 bg-purple-900/30 rounded-lg border border-purple-500">
-                  <div className="text-purple-300 text-sm mb-1">Role Revealed:</div>
-                  <div className="text-2xl font-bold capitalize">
+                <div className="mt-3 p-3 bg-purple-900/30 rounded-lg border border-purple-500 inline-block">
+                  <div className="text-purple-300 text-xs mb-1">Role Revealed:</div>
+                  <div className="text-xl font-bold capitalize">
                     {nightResult.data.revealed_role === 'werewolf' ? '🐺' : '👤'} {nightResult.data.revealed_role}
                   </div>
                 </div>
               )}
-              <p className="text-gray-500 text-sm mt-4">Waiting for others...</p>
+              <p className="text-gray-500 text-sm mt-2">Waiting for others...</p>
             </div>
           ) : (
             <p className="text-green-400">Action submitted! Waiting for others...</p>
@@ -105,23 +107,21 @@ export default function NightPhase() {
         </div>
       ) : (
         <>
-          {/* Target selection */}
+          {/* Target selection - more compact */}
           {targetPlayers.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
               {targetPlayers.map((player) => (
                 <button
                   key={player.id}
                   onClick={() => setSelectedTarget(player.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`px-4 py-2 rounded-lg border-2 transition-all ${
                     selectedTarget === player.id
                       ? 'border-werewolf-accent bg-werewolf-accent/20'
                       : 'border-gray-600 hover:border-gray-500'
                   }`}
                 >
-                  <div className="text-2xl mb-1">
-                    {player.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="text-sm font-medium">{player.name}</div>
+                  <span className="mr-2">{player.name.charAt(0).toUpperCase()}</span>
+                  <span className="text-sm font-medium">{player.name}</span>
                 </button>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function NightPhase() {
 
           {/* Restriction note */}
           {night_prompt.restriction && (
-            <div className="text-sm text-yellow-400 text-center mb-4">
+            <div className="text-sm text-yellow-400 text-center mb-3">
               ⚠️ {night_prompt.restriction}
             </div>
           )}
@@ -196,7 +196,7 @@ function WitchAction() {
 
   if (actionSubmitted) {
     return (
-      <div className="card p-8 text-center">
+      <div className="card p-6 text-center">
         <div className="text-2xl text-green-400 mb-2">✓</div>
         <p>Action submitted! Waiting for others...</p>
       </div>
@@ -204,106 +204,95 @@ function WitchAction() {
   }
 
   return (
-    <div className="card p-8">
-      <div className="text-center mb-6">
-        <div className="text-4xl mb-2">🧪</div>
-        <h2 className="text-xl font-bold text-purple-400">Witch</h2>
-        <p className="text-gray-400 mt-2">Choose your action wisely...</p>
+    <div className="card p-4 lg:p-6">
+      <div className="text-center mb-4">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-3xl">🧪</span>
+          <h2 className="text-lg font-bold text-purple-400">Witch</h2>
+        </div>
+        <p className="text-gray-400 text-sm">Choose your action wisely...</p>
       </div>
 
-      {/* Potion options */}
-      <div className="space-y-4 mb-6">
+      {/* Potion options - horizontal on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {/* Elixir option */}
-        {hasElixir && (
-          <button
-            onClick={() => { setSelectedAction('save'); setPoisonTarget(null); }}
-            className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
-              selectedAction === 'save'
-                ? 'border-green-500 bg-green-900/30'
-                : 'border-gray-600 hover:border-gray-500'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">💚</span>
-              <div>
-                <div className="font-bold text-green-400">Use Elixir of Life</div>
-                <div className="text-sm text-gray-400">Save whoever is being attacked tonight</div>
-              </div>
-            </div>
-          </button>
-        )}
-
-        {!hasElixir && (
-          <div className="p-4 rounded-lg border border-gray-700 text-gray-500">
-            💚 Elixir already used
+        <button
+          onClick={() => { setSelectedAction('save'); setPoisonTarget(null); }}
+          disabled={!hasElixir}
+          className={`p-3 rounded-lg border-2 text-center transition-all ${
+            !hasElixir
+              ? 'border-gray-700 bg-gray-800/50 opacity-50 cursor-not-allowed'
+              : selectedAction === 'save'
+              ? 'border-green-500 bg-green-900/30'
+              : 'border-gray-600 hover:border-gray-500'
+          }`}
+        >
+          <div className="text-3xl mb-1">💚</div>
+          <div className={`font-bold text-sm ${hasElixir ? 'text-green-400' : 'text-gray-500'}`}>
+            Elixir
           </div>
-        )}
+          <div className="text-xs text-gray-400 mt-1">
+            {hasElixir ? 'Save the victim' : 'Already used'}
+          </div>
+        </button>
 
         {/* Poison option */}
-        {hasPoison && (
-          <div>
-            <button
-              onClick={() => setSelectedAction('poison')}
-              className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
-                selectedAction === 'poison'
-                  ? 'border-purple-500 bg-purple-900/30'
-                  : 'border-gray-600 hover:border-gray-500'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">☠️</span>
-                <div>
-                  <div className="font-bold text-purple-400">Use Poison</div>
-                  <div className="text-sm text-gray-400">Kill someone of your choice</div>
-                </div>
-              </div>
-            </button>
-
-            {/* Poison target selection */}
-            {selectedAction === 'poison' && (
-              <div className="mt-3 grid grid-cols-3 gap-2 p-3 bg-werewolf-dark rounded-lg">
-                {targetPlayers.map((player) => (
-                  <button
-                    key={player.id}
-                    onClick={() => setPoisonTarget(player.id)}
-                    className={`p-2 rounded text-sm ${
-                      poisonTarget === player.id
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
-                  >
-                    {player.name}
-                  </button>
-                ))}
-              </div>
-            )}
+        <button
+          onClick={() => setSelectedAction('poison')}
+          disabled={!hasPoison}
+          className={`p-3 rounded-lg border-2 text-center transition-all ${
+            !hasPoison
+              ? 'border-gray-700 bg-gray-800/50 opacity-50 cursor-not-allowed'
+              : selectedAction === 'poison'
+              ? 'border-purple-500 bg-purple-900/30'
+              : 'border-gray-600 hover:border-gray-500'
+          }`}
+        >
+          <div className="text-3xl mb-1">☠️</div>
+          <div className={`font-bold text-sm ${hasPoison ? 'text-purple-400' : 'text-gray-500'}`}>
+            Poison
           </div>
-        )}
-
-        {!hasPoison && (
-          <div className="p-4 rounded-lg border border-gray-700 text-gray-500">
-            ☠️ Poison already used
+          <div className="text-xs text-gray-400 mt-1">
+            {hasPoison ? 'Kill someone' : 'Already used'}
           </div>
-        )}
+        </button>
 
         {/* Skip option */}
         <button
           onClick={() => { setSelectedAction('skip'); setPoisonTarget(null); }}
-          className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+          className={`p-3 rounded-lg border-2 text-center transition-all ${
             selectedAction === 'skip'
-              ? 'border-gray-500 bg-gray-800'
+              ? 'border-gray-500 bg-gray-700'
               : 'border-gray-600 hover:border-gray-500'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">💤</span>
-            <div>
-              <div className="font-bold">Do Nothing</div>
-              <div className="text-sm text-gray-400">Save your potions for later</div>
-            </div>
-          </div>
+          <div className="text-3xl mb-1">💤</div>
+          <div className="font-bold text-sm">Skip</div>
+          <div className="text-xs text-gray-400 mt-1">Save potions</div>
         </button>
       </div>
+
+      {/* Poison target selection */}
+      {selectedAction === 'poison' && hasPoison && (
+        <div className="mb-4 p-3 bg-werewolf-dark rounded-lg">
+          <div className="text-sm text-gray-400 mb-2">Select target:</div>
+          <div className="flex flex-wrap gap-2">
+            {targetPlayers.map((player) => (
+              <button
+                key={player.id}
+                onClick={() => setPoisonTarget(player.id)}
+                className={`px-3 py-1.5 rounded text-sm ${
+                  poisonTarget === player.id
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                {player.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Submit */}
       <div className="text-center">

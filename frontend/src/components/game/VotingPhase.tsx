@@ -43,11 +43,13 @@ export default function VotingPhase() {
   }
 
   return (
-    <div className="card p-8">
-      <div className="text-center mb-6">
-        <div className="text-4xl mb-2">⚖️</div>
-        <h2 className="text-xl font-bold text-orange-400">Voting Phase</h2>
-        <p className="text-gray-400 mt-2">
+    <div className="card p-4 lg:p-6">
+      <div className="text-center mb-4">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-3xl">⚖️</span>
+          <h2 className="text-lg font-bold text-orange-400">Voting Phase</h2>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">
           {hasVoted 
             ? 'Your vote has been cast. Waiting for others...'
             : 'Vote for who you think is a werewolf!'
@@ -57,8 +59,8 @@ export default function VotingPhase() {
 
       {!hasVoted && (
         <>
-          {/* Vote targets */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          {/* Vote targets - horizontal flow */}
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
             {alivePlayers.map((player) => {
               const voteCount = voteCounts[player.id] || 0;
               
@@ -66,22 +68,20 @@ export default function VotingPhase() {
                 <button
                   key={player.id}
                   onClick={() => setSelectedTarget(player.id)}
-                  className={`p-4 rounded-lg border-2 transition-all relative ${
+                  className={`px-4 py-2 rounded-lg border-2 transition-all relative ${
                     selectedTarget === player.id
                       ? 'border-orange-500 bg-orange-900/20'
                       : 'border-gray-600 hover:border-gray-500'
                   }`}
                 >
-                  <div className="text-2xl mb-1">
-                    {player.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="text-sm font-medium">{player.name}</div>
+                  <span className="mr-2">{player.name.charAt(0).toUpperCase()}</span>
+                  <span className="text-sm font-medium">{player.name}</span>
                   
                   {/* Live vote count - only show if setting enabled */}
                   {showVoteCounts && voteCount > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                       {voteCount}
-                    </div>
+                    </span>
                   )}
                 </button>
               );

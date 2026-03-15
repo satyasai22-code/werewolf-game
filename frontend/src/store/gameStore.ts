@@ -225,8 +225,8 @@ function handleMessage(
       // Clear lobbyState when game starts to prevent navigation conflicts
       // Clear nightResult when phase changes
       // Clear skipStatus when phase changes
-      // DON'T clear timerRemaining - it's managed separately by timer_update
-      set({ gameState: data as GameState, lobbyState: null, nightResult: null, skipStatus: null });
+      // Clear timer when receiving new game state (phase change)
+      set({ gameState: data as GameState, lobbyState: null, nightResult: null, skipStatus: null, timerRemaining: null });
       break;
 
     case 'player_joined':
@@ -252,7 +252,8 @@ function handleMessage(
       break;
 
     case 'phase_changed':
-      // Phase change notifications are handled by game_state updates
+      // Phase change - clear timer (new timer will be sent if needed)
+      set({ timerRemaining: null });
       break;
 
     case 'night_result':
@@ -329,9 +330,11 @@ function handleMessage(
       get().addChatMessage(data as ChatMessage);
       break;
 
-    case 'timer_update':
-      set({ timerRemaining: (data as { remaining: number }).remaining });
+    case 'timer_update': {
+      const timerData = data as { remaining: number | null };
+      set({ timerRemaining: timerData.remaining });
       break;
+    }
 
     case 'skip_status':
       set({ skipStatus: data as { skip_count: number; required: number; players_ready: string[] } });

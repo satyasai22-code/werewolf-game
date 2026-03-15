@@ -672,6 +672,14 @@ class GameMessageHandler:
                 await task
             except asyncio.CancelledError:
                 pass
+            # Notify clients that timer is cleared
+            await manager.broadcast_to_room(
+                {
+                    "type": MessageType.TIMER_UPDATE,
+                    "data": {"remaining": None, "phase": None}
+                },
+                room_code
+            )
     
     async def _handle_timer_expired(self, room_code: str, phase: GamePhase) -> None:
         """Handle phase timer expiration."""
