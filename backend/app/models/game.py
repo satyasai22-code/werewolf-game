@@ -545,6 +545,11 @@ class Game(BaseModel):
     
     def to_lobby_dict(self) -> Dict[str, Any]:
         """Serialize game state for lobby view."""
+        if self.settings.hide_role_config:
+            # In blind mode, required_players is just the current player count (or min 4)
+            required_players = max(len(self.players), 4)
+        else:
+            required_players = self.role_config.get_total_players()
         return {
             "id": self.id,
             "room_code": self.room_code,
@@ -555,7 +560,7 @@ class Game(BaseModel):
             },
             "settings": self.settings.to_dict(),
             "player_count": len(self.players),
-            "required_players": self.role_config.get_total_players(),
+            "required_players": required_players,
             "all_ready": self.all_players_ready(),
         }
     
