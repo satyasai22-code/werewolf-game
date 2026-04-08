@@ -7,12 +7,12 @@ A full-stack, real-time multiplayer Werewolf (Mafia) game built with React, Fast
 - **Real-time multiplayer** gameplay via WebSockets
 - **Room-based** matchmaking with shareable room codes
 - **6 unique roles** with extensible architecture:
-  - 🐺 **Werewolf** - Hunt villagers at night
-  - 👤 **Villager** - Find and eliminate werewolves
-  - 🔮 **Seer** - Reveal one player's role each night
-  - 💉 **Doctor** - Protect one player from death
-  - 🧪 **Witch** - One save potion and one kill potion
-  - ⚔️ **Avenger** - Take someone with you when you die
+  - **Werewolf** - Hunt villagers at night
+  - **Villager** - Find and eliminate werewolves
+  - **Seer** - Reveal one player's role each night
+  - **Doctor** - Protect one player from death
+  - **Witch** - One save potion and one kill potion
+  - **Avenger** - Take someone with you when you die
 - **Day/Night cycle** with discussion and voting phases
 - **Blind game state** - players only see information relevant to their role
 - **Admin ownership transfer** when the room creator leaves
