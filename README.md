@@ -2,7 +2,7 @@
 
 A full-stack, real-time multiplayer Werewolf (Mafia) game built with React, FastAPI, and WebSockets.
 
-## 🎮 Features
+## Features
 
 - **Real-time multiplayer** gameplay via WebSockets
 - **Room-based** matchmaking with shareable room codes
@@ -17,7 +17,7 @@ A full-stack, real-time multiplayer Werewolf (Mafia) game built with React, Fast
 - **Blind game state** - players only see information relevant to their role
 - **Admin ownership transfer** when the room creator leaves
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Backend
 - **FastAPI** - Modern Python web framework
@@ -32,7 +32,7 @@ A full-stack, real-time multiplayer Werewolf (Mafia) game built with React, Fast
 - **Zustand** - State management
 - **Vite** - Build tool
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 werewolf/
@@ -68,7 +68,7 @@ werewolf/
     └── tailwind.config.js
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python 3.9+
@@ -105,7 +105,7 @@ npm run dev
 
 The frontend will be available at `http://localhost:3000` and will proxy API/WebSocket requests to the backend.
 
-## 🎯 How to Play
+## How to Play
 
 1. **Create a Room**: Enter your name and click "Create New Game"
 2. **Share the Code**: Give the 6-character room code to your friends
@@ -117,7 +117,7 @@ The frontend will be available at `http://localhost:3000` and will proxy API/Web
 - **Village Team**: Eliminate all werewolves
 - **Werewolf Team**: Equal or outnumber the villagers
 
-## 🔧 Architecture
+## Architecture
 
 ### Role System (Strategy Pattern)
 
@@ -163,7 +163,7 @@ Players receive personalized game views via `player.get_game_view(game)`:
 - Dead players' roles are revealed during day phase
 - Night actions and targets are hidden appropriately
 
-## 📝 API Reference
+## API Reference
 
 ### HTTP Endpoints
 
@@ -185,7 +185,7 @@ Players receive personalized game views via `player.get_game_view(game)`:
 | `game_state` | Server→Client | Personalized game state |
 | `phase_changed` | Server→Client | Phase transition |
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -193,7 +193,7 @@ Players receive personalized game views via `player.get_game_view(game)`:
 4. Add tests if applicable
 5. Submit a pull request
 
-## 🌐 Deployment
+## Deployment
 
 ### Deploy Backend to Railway
 
